@@ -1,0 +1,159 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Imbere_Rwanda | Discover Rwanda</title>
+
+    <meta name="description"
+          content="Explore Rwanda's knowledge, culture, history and development with Imbere_Rwanda.">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="app-container">
+
+        <!-- LEFT SIDEBAR -->
+        <aside class="sidebar">
+
+            <div class="brand">
+                <div class="brand-icon">IR</div>
+                <span>Imbere_Rwanda</span>
+            </div>
+
+            <button class="new-chat" id="newChat">
+                <span>＋</span> New chat
+            </button>
+
+            <div class="sidebar-section">
+                <p class="section-title">KNOWLEDGE AREAS</p>
+
+                <button class="category" data-category="agriculture">
+                    🌱 Agriculture
+                </button>
+
+                <button class="category" data-category="healthcare">
+                    🏥 Healthcare
+                </button>
+
+                <button class="category" data-category="culture">
+                    🎭 Culture and Traditions
+                </button>
+
+                <button class="category" data-category="genocide_1994">
+                    📚 History
+                </button>
+
+                <button class="category" data-category="education">
+                    🎓 Education
+                </button>
+
+                <button class="category" data-category="tourism">
+                    🏞️ Tourism and Heritage
+                </button>
+            </div>
+
+            <div class="sidebar-bottom">
+                <button class="sidebar-link">About Imbere_Rwanda</button>
+                <button class="sidebar-link">Settings</button>
+            </div>
+
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+
+            <header class="topbar">
+                <div class="mobile-brand">Imbere_Rwanda</div>
+
+                <select id="languageSelector" aria-label="Choose language">
+                    <option value="en">English</option>
+                    <option value="rw">Kinyarwanda</option>
+                    <option value="fr">Français</option>
+                    <option value="sw">Kiswahili</option>
+                </select>
+            </header>
+
+            <!-- WELCOME SCREEN -->
+            <section class="welcome-screen" id="welcomeScreen">
+
+                <div class="welcome-icon">IR</div>
+
+                <h1>What would you like to know about Rwanda?</h1>
+
+                <p class="welcome-description">
+                    Discover Rwanda's knowledge, history, culture,
+                    education and development.
+                </p>
+
+                <div class="suggestions">
+                    <button class="suggestion">
+                        Tell me about Rwandan culture
+                    </button>
+
+                    <button class="suggestion">
+                        What are Rwanda's education priorities?
+                    </button>
+
+                    <button class="suggestion">
+                        Explore Rwanda's tourism
+                    </button>
+
+                    <button class="suggestion">
+                        Learn about Rwandan agriculture
+                    </button>
+                </div>
+
+            </section>
+
+            <!-- CHAT AREA -->
+            <section class="chat-area" id="chatArea">
+
+                <div class="message-list" id="messageList"></div>
+
+            </section>
+
+            <!-- MESSAGE INPUT -->
+            <footer class="chat-footer">
+
+                <form class="message-box" id="chatForm">
+
+                    <textarea
+                        id="messageInput"
+                        placeholder="Ask anything about Rwanda..."
+                        rows="1"
+                        aria-label="Your question"
+                    ></textarea>
+
+                    <div class="input-actions">
+                        <span class="input-hint">
+                            Imbere_Rwanda Knowledge Assistant
+                        </span>
+
+                        <button type="submit" id="sendButton"
+                                aria-label="Send message">
+                            ↑
+                        </button>
+                    </div>
+
+                </form>
+
+                <p class="disclaimer">
+                    Answers should be grounded in reliable sources.
+                    Always check the references provided.
+                </p>
+
+            </footer>
+
+        </main>
+
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
