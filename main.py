@@ -1,3 +1,4 @@
+
 import logging
 import os
 import re
@@ -32,35 +33,70 @@ BASE_DIR = Path(__file__).resolve().parent
 # WEBSITE DIRECTORY CONFIGURATION
 # =========================================================
 
-configured_website = os.getenv("WEBSITE_DIR")
+def find_website_directory():
 
-if configured_website:
-    WEBSITE_DIR = Path(configured_website)
+    configured_website = os.getenv("WEBSITE_DIR")
 
-    if not WEBSITE_DIR.is_absolute():
-        WEBSITE_DIR = BASE_DIR / WEBSITE_DIR
+    possible_directories = []
 
-else:
-    possible_directories = [
+    # 1. Check the directory configured on Render
+    if configured_website:
+
+        configured_path = Path(configured_website)
+
+        if not configured_path.is_absolute():
+            configured_path = BASE_DIR / configured_path
+
+        possible_directories.append(configured_path)
+
+    # 2. Check common frontend locations
+    possible_directories.extend([
         BASE_DIR / "website",
         BASE_DIR / "static",
+        BASE_DIR / "frontend",
+        BASE_DIR / "public",
         BASE_DIR,
-    ]
+        BASE_DIR.parent / "website",
+        BASE_DIR.parent / "static",
+        BASE_DIR.parent / "frontend",
+        BASE_DIR.parent / "public",
+        BASE_DIR.parent,
+    ])
 
-    WEBSITE_DIR = next(
-        (
-            folder for folder in possible_directories
-            if (folder / "index.html").is_file()
-        ),
-        BASE_DIR / "website"
-    )
+    checked_directories = set()
+
+    for folder in possible_directories:
+
+        folder = folder.resolve()
+
+        if folder in checked_directories:
+            continue
+
+        checked_directories.add(folder)
+
+        homepage = folder / "index.html"
+
+        logger.info("Checking website directory: %s", folder)
+
+        if homepage.is_file():
+
+            logger.info("Homepage found: %s", homepage)
+
+            return folder
+
+    logger.error("No index.html file was found.")
+
+    for folder in checked_directories:
+        logger.error("Checked: %s", folder)
+
+    return None
+
+
+WEBSITE_DIR = find_website_directory()
 
 logger.info("Project directory: %s", BASE_DIR)
+
 logger.info("Website directory: %s", WEBSITE_DIR)
-logger.info(
-    "Homepage exists: %s",
-    (WEBSITE_DIR / "index.html").is_file()
-)
 
 
 # =========================================================
@@ -73,6 +109,9 @@ DB_PATH = Path(
         str(BASE_DIR / "data" / "imbere_rwanda.db")
     )
 )
+
+if not DB_PATH.is_absolute():
+    DB_PATH = BASE_DIR / DB_PATH
 
 SUPPORTED_LANGUAGES = {"en", "rw", "fr", "sw"}
 
@@ -123,7 +162,7 @@ groq_client = (
 app = FastAPI(
     title="Imbere_Rwanda AI",
     description="A Rwanda-focused multilingual knowledge assistant",
-    version="2.1.0",
+    version="2.1.1",
 )
 
 
@@ -527,6 +566,17 @@ Answer the user's question using the supplied information when relevant.
 @app.get("/")
 def home():
 
+    if WEBSITE_DIR is None:
+
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                "Website homepage not found. "
+                "Place index.html in the frontend directory "
+                "or configure WEBSITE_DIR."
+            )
+        )
+
     homepage = WEBSITE_DIR / "index.html"
 
     if not homepage.is_file():
@@ -538,7 +588,7 @@ def home():
 
         raise HTTPException(
             status_code=404,
-            detail="Website homepage not found. Check WEBSITE_DIR and deployed files."
+            detail="Website homepage not found."
         )
 
     return FileResponse(homepage)
@@ -558,10 +608,15 @@ def health():
         "database_found": DB_PATH.is_file(),
 
         "website_found": (
-            WEBSITE_DIR / "index.html"
-        ).is_file(),
+            WEBSITE_DIR is not None
+            and (WEBSITE_DIR / "index.html").is_file()
+        ),
 
-        "website_directory": str(WEBSITE_DIR),
+        "website_directory": (
+            str(WEBSITE_DIR)
+            if WEBSITE_DIR
+            else None
+        ),
 
         "conversation_engine": "connected",
 
@@ -591,7 +646,7 @@ def api_status():
 
         "application": "Imbere_Rwanda AI",
 
-        "version": "2.1.0",
+        "version": "2.1.1",
 
         "groq_configured": groq_client is not None,
 
@@ -863,31 +918,24 @@ def chat(request: ChatRequest):
 # STATIC WEBSITE FILES
 # =========================================================
 
-if (WEBSITE_DIR / "index.html").is_file():
+if WEBSITE_DIR is not None:
 
     app.mount(
-
         "/",
-
         StaticFiles(
-
             directory=str(WEBSITE_DIR),
-
             html=True
-
         ),
-
         name="website"
-
     )
 
     logger.info(
-        "Imbere_Rwanda website mounted successfully."
+        "Imbere_Rwanda website mounted successfully from %s",
+        WEBSITE_DIR
     )
 
 else:
 
     logger.warning(
-        "Website not mounted. index.html missing from %s",
-        WEBSITE_DIR
+        "Website not mounted because index.html was not found."
     )
